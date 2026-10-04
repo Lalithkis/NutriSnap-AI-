@@ -1,0 +1,15 @@
+# Maestro flow that does not need the AI provider: manual search → save → totals.
+appId: ai.nutrisnap.app
+---
+- launchApp
+- tapOn: "Scan a meal"
+- tapOn: "Search & add foods manually"
+- inputText: "idli"
+- tapOn: "Idli.*"
+- assertVisible: "Meal total"
+- tapOn: "Save meal"
+- extendedWaitUntil:
+    visible: "Meal logged"
+    timeout: 15000
+- tapOn: "Back to dashboard"
+- assertVisible: "Today's meals"

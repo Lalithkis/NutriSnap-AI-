@@ -1,0 +1,49 @@
+# Minimal Supabase CLI config for local development (`supabase start`).
+project_id = "nutrisnap-ai"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+site_url = "nutrisnap://"
+additional_redirect_urls = ["nutrisnap://"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+otp_length = 6
+
+[auth.email.template.recovery]
+subject = "Your NutriSnap password reset code"
+content_path = "./supabase/templates/recovery.html"
+
+[storage]
+enabled = true
+file_size_limit = "8MiB"
+
+[edge_runtime]
+enabled = true
+
+[functions.analyze-meal]
+verify_jwt = true
+[functions.food-search]
+verify_jwt = true
+[functions.assistant]
+verify_jwt = true
+[functions.delete-account]
+verify_jwt = true

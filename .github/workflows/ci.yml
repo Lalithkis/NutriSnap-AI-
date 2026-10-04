@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck app + shared code
+        run: npm run typecheck
+      - name: Unit & pipeline tests
+        run: npm test
+      - name: Database schema, RLS & meal-logging tests (PostgreSQL 16)
+        run: PG_BIN=/usr/lib/postgresql/16/bin npm run test:db
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check edge functions with Deno
+        run: npm run typecheck:deno
+      - name: Bundle Android JS
+        run: EXPO_OFFLINE=1 EXPO_PUBLIC_SUPABASE_URL=https://ci.supabase.co EXPO_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder-anon-key-000000 npx expo export --platform android --output-dir /tmp/export

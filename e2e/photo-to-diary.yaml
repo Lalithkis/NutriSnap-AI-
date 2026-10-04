@@ -1,0 +1,55 @@
+# Maestro end-to-end flow: photo → AI review → confirm → diary/dashboard update.
+# Prerequisites (see README → Testing → End-to-end):
+#   * Local Supabase running with seed data (demo@nutrisnap.dev) and ANTHROPIC_API_KEY set for edge functions
+#   * A meal photo in the emulator gallery:  adb push e2e/fixtures/idli-sambar.jpg /sdcard/Pictures/ && adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/idli-sambar.jpg
+#   * A development build installed (appId below)
+# Run: maestro test e2e/photo-to-diary.yaml
+appId: ai.nutrisnap.app
+---
+- launchApp:
+    clearState: true
+- tapOn: "I already have an account"
+- tapOn: "Email"
+- inputText: "demo@nutrisnap.dev"
+- tapOn: "Password"
+- inputText: "demo-password-123"
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "kcal remaining"
+    timeout: 20000
+- tapOn: "Scan a meal"
+- tapOn: "Lunch"
+- tapOn: "Choose from gallery"
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- tapOn:
+    id: "com.android.documentsui:id/icon_thumb"
+    index: 0
+    optional: true
+- extendedWaitUntil:
+    visible: "Review meal"
+    timeout: 60000
+- assertVisible: "Meal total"
+# Correct a portion: bump the first item's servings
+- tapOn:
+    text: "Increase servings"
+    index: 0
+- scrollUntilVisible:
+    element: "Confirm all & save"
+- tapOn: "Confirm all & save"
+- extendedWaitUntil:
+    visible: "Meal logged"
+    timeout: 15000
+- tapOn: "Back to dashboard"
+- assertVisible: "Today's meals"
+- assertVisible: "Lunch.*"
+# Delete it again and check the dashboard still renders (totals recalculated)
+- tapOn: "Lunch.*"
+- scrollUntilVisible:
+    element: "Delete meal"
+- tapOn: "Delete meal"
+- tapOn: "Delete"
+- assertVisible: "Meal details|Today's meals"
